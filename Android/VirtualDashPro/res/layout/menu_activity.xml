@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="49dp"
+        android:layout_height="60dp"
+        android:orientation="horizontal" >
+
+        <View
+            android:id="@+id/connectIndicator"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@color/Red" />
+
+        <TextView
+            android:id="@+id/bluetoothStatusMenu"
+            android:layout_width="318dp"
+            android:layout_height="30dp"
+            android:paddingBottom="50dp" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/connect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Connect to Bluetooth Device" />
+
+    <Button
+        android:id="@+id/dash"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Dashboard" />
+
+    <Button
+        android:id="@+id/plot"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Plot" />
+
+    <Button
+        android:id="@+id/log"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Logger" />
+
+</LinearLayout>
