@@ -5,6 +5,6 @@ interface IBluetoothService {
 	int getPid(int pid);
 	
 	// Get Bluetooth Status
-	String Status(out String status);
+	String Status(in String status);
 
 }

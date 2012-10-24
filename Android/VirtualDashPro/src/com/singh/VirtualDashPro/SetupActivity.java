@@ -9,12 +9,14 @@ import java.util.HashMap;
 import java.util.UUID;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -45,16 +47,17 @@ public class SetupActivity extends Activity {
 	private HashMap<String, String> deviceHash = new HashMap<String, String>();
 
 	private IBluetoothService bluetoothService;
-
+	
 	ListView foundDevicesListView;
 	TextView bluetoothStatusSetup;
 	Button refreshFoundDevicesListButton;
 	ArrayAdapter<String> btArrayAdapter;
 
-	// BluetoothAdapter bluetoothAdapter;
-	// BluetoothDevice mdevice;
-	// BluetoothSocket mClientSocket;
+	BluetoothAdapter bluetoothAdapter;
+	BluetoothDevice mdevice;
+	BluetoothSocket mClientSocket;
 	boolean isBound = false; // Bound to Service indicator
+
 
 	// Declare the service
 	IBluetoothService mBluetoothService;
@@ -68,26 +71,31 @@ public class SetupActivity extends Activity {
 		// Set Content Layout
 		setContentView(R.layout.setup_activity);
 
-		// // Get Bluetooth Adapter
-		// bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+		// Get Bluetooth Adapter
+		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-		// registerReceiver(ActionFoundReceiver, new IntentFilter(
-		// BluetoothDevice.ACTION_FOUND));
-		//
-		// // Set Click listeners
-		// setClickListeners();
+		registerReceiver(ActionFoundReceiver, new IntentFilter(
+				BluetoothDevice.ACTION_FOUND));
 
-		// Start BluetoothService so that it will not stop unless explicitly
-		// told to do so
-		Intent startIntent = new Intent(this, BluetoothService.class);
-		startIntent.putExtra("ACTION", "SERVICE_REQUEST_START");
-		startService(startIntent);
+		// Initialize GUI
+		initializeGUI();
 
-		// Bind to Service
-		Intent bindIntent = new Intent(getApplicationContext(),
-				BluetoothService.class);
-		isBound = bindService(bindIntent, mConnection, Context.BIND_AUTO_CREATE);
-		Log.d(TAG, "Service bind result = " + isBound);
+		// Set Click listeners
+		setClickListeners();
+		
+		getBluetoothState();
+
+//		// Start BluetoothService so that it will not stop unless explicitly
+//		// told to do so
+//		Intent startIntent = new Intent(this, BluetoothService.class);
+//		startIntent.putExtra("ACTION", "SERVICE_REQUEST_START");
+//		startService(startIntent);
+
+//		// Bind to Service
+//		Intent bindIntent = new Intent(getApplicationContext(),
+//				BluetoothService.class);
+//		isBound = bindService(bindIntent, mConnection, Context.BIND_AUTO_CREATE);
+//		Log.d(TAG, "Service bind result = " + isBound);
 
 	}
 
@@ -95,91 +103,101 @@ public class SetupActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		if (D)
 			Log.e(TAG, "+++ ON RESUME +++");
-
-		if (!(isBound)) {
-
-			Intent bindIntent = new Intent(getApplicationContext(),
-					BluetoothService.class);
-			boolean result = bindService(bindIntent, mConnection,
-					Context.BIND_AUTO_CREATE);
-			Log.d(BluetoothService.class.getSimpleName(),
-					"Service bind result = " + result);
-
-		}
+		
+		// Bind to Service
+//		if (!(isBound)) {
+//
+//			Intent bindIntent = new Intent(getApplicationContext(),
+//					BluetoothService.class);
+//			boolean result = bindService(bindIntent, mConnection,
+//					Context.BIND_AUTO_CREATE);
+//			Log.d(BluetoothService.class.getSimpleName(),
+//					"Service bind result = " + result);
+//
+//		}
+		
+		getBluetoothState();
 	}
 
-	// @Override
-	// protected void onActivityResult(int requestCode, int resultCode, Intent
-	// data) {
-	// if (requestCode == REQUEST_ENABLE_BT) {
-	// // Start Bluetooth Discovery
-	// bluetoothAdapter.startDiscovery();
-	// checkBlueToothState();
-	//
-	// }
-	// // TODO Not sure if this is needed....commenting out for now
-	// // if (requestCode == REQUEST_SCAN_DEVICE){
-	// // if(resultCode == RESULT_OK){
-	// // }
-	// // }
-	// }
+	 @Override
+	 protected void onActivityResult(int requestCode, int resultCode, Intent
+	 data) {
+	 if (requestCode == REQUEST_ENABLE_BT) {
+	 // Start Bluetooth Discovery
+	 bluetoothAdapter.startDiscovery();
+	
+	 }
+	 // TODO Not sure if this is needed....commenting out for now
+	 // if (requestCode == REQUEST_SCAN_DEVICE){
+	 // if(resultCode == RESULT_OK){
+	 // }
+	 // }
+	 }
 
-	// // Finds new Bluetooth devices, updates status
-	// private final BroadcastReceiver ActionFoundReceiver = new
-	// BroadcastReceiver() {
-	// @Override
-	// public void onReceive(Context context, Intent intent) {
-	// String action = intent.getAction();
-	// if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-	// // Grab devices
-	// BluetoothDevice device = intent
-	// .getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-	//
-	// // Check to see if we have already stored the device
-	// // Do lookups based on device address -- the name may not be
-	// // unique
-	// // TODO only using the hash to prevent the list from duplicating
-	// // and growing. Fix so it doesn't constantly populate
-	// if (!deviceHash.containsKey(device.getAddress())) {
-	// deviceHash.put(device.getAddress(), device.getName());
-	// btArrayAdapter.add(device.getName() + "\n"
-	// + device.getAddress());
-	// btArrayAdapter.notifyDataSetChanged();
-	// }
-	// }
-	// }
-	// };
+	 // Finds new Bluetooth devices, updates status
+	 private final BroadcastReceiver ActionFoundReceiver = new
+			 BroadcastReceiver() {
+		 @Override
+		 public void onReceive(Context context, Intent intent) {
+			 String action = intent.getAction();
+			 if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+				 // Grab devices
+				 BluetoothDevice device = intent
+						 .getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+				 // Check to see if we have already stored the device
+				 // Do lookups based on device address -- the name may not be
+				 // unique
+				 // TODO only using the hash to prevent the list from duplicating
+				 // and growing. Fix so it doesn't constantly populate
+				 if (!deviceHash.containsKey(device.getAddress())) {
+					 deviceHash.put(device.getAddress(), device.getName());
+					 btArrayAdapter.add(device.getName() + "\n"
+							 + device.getAddress());
+					 btArrayAdapter.notifyDataSetChanged();
+				 }
+			 }
+		 }
+	 };
 
 	// Initialize Bluetooth and report status
-	private void getBluetoothState() {
-		String btStatus = null;
-		try {
-			btStatus = mBluetoothService.Status(btStatus);
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NullPointerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		Log.d(TAG, "Bluetooth Status:" + btStatus);
-		bluetoothStatusSetup.setText(btStatus);
+	 private void getBluetoothState() {
 
-		// if (bluetoothAdapter == null) {
-		// bluetoothStatusSetup.setText("Bluetooth NOT supported");
-		// } else if (bluetoothAdapter.isEnabled()
-		// && bluetoothAdapter.isDiscovering()) {
-		// bluetoothStatusSetup
-		// .setText("Bluetooth is currently in device discovery process.");
-		// } else if (bluetoothAdapter.isEnabled()) {
-		// bluetoothStatusSetup.setText("Bluetooth is Enabled.");
-		// } else {
-		// bluetoothStatusSetup.setText("Bluetooth is NOT Enabled!");
-		// Intent enableBtIntent = new Intent(
-		// BluetoothAdapter.ACTION_REQUEST_ENABLE);
-		// startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-		// }
-	}
+		 // Get Status From Service
+		 //		String btStatus = null;
+		 //		try {
+		 //			btStatus = mBluetoothService.Status(btStatus);
+		 //		} catch (RemoteException e) {
+		 //			// TODO Auto-generated catch block
+		 //			e.printStackTrace();
+		 //		} catch (NullPointerException e) {
+		 //			// TODO Auto-generated catch block
+		 //			e.printStackTrace();
+		 //		}
+		 //		Log.d(TAG, "Bluetooth Status:" + btStatus);
+		 //		bluetoothStatusSetup.setText(btStatus);
+
+		 if (bluetoothAdapter == null) {
+			 bluetoothStatusSetup.setText("Bluetooth NOT supported");
+		 } else if (!(bluetoothAdapter.isEnabled())) {
+			 bluetoothStatusSetup.setText("Bluetooth is NOT Enabled!");
+			 Intent enableBtIntent = new Intent(
+					 BluetoothAdapter.ACTION_REQUEST_ENABLE);
+			 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+			 
+			 // Go back to update
+			 getBluetoothState();
+		 }
+
+		 if (bluetoothAdapter.isEnabled()) {
+
+			 if (bluetoothAdapter.isDiscovering()) {
+				 bluetoothStatusSetup.setText("Bluetooth is currently in device discovery process.");
+			 } else {
+				 bluetoothStatusSetup.setText("Bluetooth is Enabled.");
+			 }
+		 }
+	 }
 
 	private void initializeGUI() {
 		// Initialize Text Views
@@ -193,38 +211,40 @@ public class SetupActivity extends Activity {
 		btArrayAdapter = new ArrayAdapter<String>(SetupActivity.this,
 				android.R.layout.simple_list_item_1);
 		foundDevicesListView.setAdapter(btArrayAdapter);
-
-		getBluetoothState();
 	}
 
-	// private void setClickListeners() {
-	// refreshFoundDevicesListButton
-	// .setOnClickListener(new View.OnClickListener() {
-	// public void onClick(View v) {
-	// // Refresh List
-	// btArrayAdapter.clear();
-	// bluetoothAdapter.startDiscovery();
-	// checkBlueToothState();
-	// }
-	// });
-	//
-	// foundDevicesListView.setOnItemClickListener(new OnItemClickListener() {
-	// public void onItemClick(AdapterView<?> parent, View v,
-	// int position, long id) {
-	// // Get Address from onClick
-	// // String is returned as DEVICE_NAME\nDEVICE_ADDRESS. Split the
-	// // string based on \n
-	// // and get the second element, [1]
-	// String selectedDevice = parent.getItemAtPosition(position)
-	// .toString().split("\\n")[1];
-	// Log.d("SelectedDevice: ", selectedDevice);
-	//
-	// // Connect to Device
-	// serviceconnectRequest(selectedDevice);
-	//
-	// }
-	// });
-	// }
+	private void setClickListeners() {
+		
+		refreshFoundDevicesListButton.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				
+				btArrayAdapter.clear();
+				bluetoothAdapter.startDiscovery();
+				
+				getBluetoothState();
+
+			}
+
+		});
+
+		foundDevicesListView.setOnItemClickListener(new OnItemClickListener() {
+			public void onItemClick(AdapterView<?> parent, View v,
+					int position, long id) {
+				// Get Address from onClick
+				// String is returned as DEVICE_NAME\nDEVICE_ADDRESS. Split the
+				// string based on \n
+				// and get the second element, [1]
+				String selectedDevice = parent.getItemAtPosition(position)
+						.toString().split("\\n")[1];
+				Log.d("SelectedDevice: ", selectedDevice);
+
+				// Connect to Device
+				servicestartRequest(selectedDevice);
+
+			}
+		});
+		
+	}
 
 	// Attempts to connect to device by running BluetoothService OnStartCommand
 	public synchronized void servicestartRequest(String selectedDevice) {
@@ -239,28 +259,28 @@ public class SetupActivity extends Activity {
 
 	}
 
-	private ServiceConnection mConnection = new ServiceConnection() {
-		// Called when the connection with the service is established
-		public void onServiceConnected(ComponentName className, IBinder service) {
-			// Following the example above for an AIDL interface,
-			// this gets an instance of the IRemoteInterface, which we can use
-			// to call on the service
-			mBluetoothService = IBluetoothService.Stub.asInterface(service);
-
-			isBound = true;
-
-			initializeGUI();
-
-		}
-
-		// Called when the connection with the service disconnects unexpectedly
-		public void onServiceDisconnected(ComponentName className) {
-			Log.e(TAG, "Service has unexpectedly disconnected");
-			mBluetoothService = null;
-
-			isBound = false;
-		}
-	};
+//	private ServiceConnection mConnection = new ServiceConnection() {
+//		// Called when the connection with the service is established
+//		public void onServiceConnected(ComponentName className, IBinder service) {
+//			// Following the example above for an AIDL interface,
+//			// this gets an instance of the IRemoteInterface, which we can use
+//			// to call on the service
+//			mBluetoothService = IBluetoothService.Stub.asInterface(service);
+//
+//			isBound = true;
+//
+//			initializeGUI();
+//
+//		}
+//
+//		// Called when the connection with the service disconnects unexpectedly
+//		public void onServiceDisconnected(ComponentName className) {
+//			Log.e(TAG, "Service has unexpectedly disconnected");
+//			mBluetoothService = null;
+//
+//			isBound = false;
+//		}
+//	};
 
 	@Override
 	protected void onDestroy() {

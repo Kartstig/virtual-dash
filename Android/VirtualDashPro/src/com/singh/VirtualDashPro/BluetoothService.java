@@ -47,6 +47,7 @@ public class BluetoothService extends Service {
 
 	private String selectedDevice = null;
 	private String status = null;
+	private String ACTION_REQUEST = null;
 
 	private Bundle startData = new Bundle();
 
@@ -109,20 +110,27 @@ public class BluetoothService extends Service {
 		isRunning = true;
 
 		// Get device information
-		// startData = intent.getExtras();
+		startData = intent.getExtras();
 
-		// selectedDevice = startData.getString("selectedDevice");
-		// Log.d(TAG, selectedDevice);
+		selectedDevice = startData.getString("selectedDevice");
+		ACTION_REQUEST = startData.getString("ACTION");
+		Log.d(TAG, selectedDevice);
+		Log.d(TAG, ACTION_REQUEST);
 
 		// Connect to device if not null
-		// if (!(selectedDevice == "") && !(selectedDevice == null)) {
-		// Toast.makeText(getApplicationContext(),
-		// "Attempting to connect to " + selectedDevice,
-		// Toast.LENGTH_LONG).show();
-		// // bluetoothDevice =
-		// bluetoothAdapter.getRemoteDevice(selectedDevice);
-		// // connectToDevice();
-		// }
+		if (ACTION_REQUEST == "SERVICE_REQUEST_CONNECT") {
+			if (!(selectedDevice == "") && !(selectedDevice == null)) {
+				Toast.makeText(getApplicationContext(),
+						"Attempting to connect to " + selectedDevice,
+						Toast.LENGTH_LONG).show();
+				// bluetoothDevice =
+				bluetoothAdapter.getRemoteDevice(selectedDevice);
+				connectToDevice();
+			}
+			else{
+				Toast.makeText(getApplicationContext(),"No device!", Toast.LENGTH_LONG).show();
+			}
+		}
 		return START_STICKY;
 	}
 
