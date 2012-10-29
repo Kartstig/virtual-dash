@@ -56,8 +56,6 @@ public class SetupActivity extends Activity {
 	BluetoothAdapter bluetoothAdapter;
 	BluetoothDevice mdevice;
 	BluetoothSocket mClientSocket;
-	boolean isBound = false; // Bound to Service indicator
-
 
 	// Declare the service
 	IBluetoothService mBluetoothService;
@@ -119,20 +117,15 @@ public class SetupActivity extends Activity {
 		getBluetoothState();
 	}
 
-	 @Override
-	 protected void onActivityResult(int requestCode, int resultCode, Intent
-	 data) {
-	 if (requestCode == REQUEST_ENABLE_BT) {
-	 // Start Bluetooth Discovery
-	 bluetoothAdapter.startDiscovery();
-	
-	 }
-	 // TODO Not sure if this is needed....commenting out for now
-	 // if (requestCode == REQUEST_SCAN_DEVICE){
-	 // if(resultCode == RESULT_OK){
-	 // }
-	 // }
-	 }
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == REQUEST_ENABLE_BT) {
+			// Start Bluetooth Discovery
+			bluetoothAdapter.startDiscovery();
+			getBluetoothState();
+
+		}
+	}
 
 	 // Finds new Bluetooth devices, updates status
 	 private final BroadcastReceiver ActionFoundReceiver = new
@@ -163,20 +156,6 @@ public class SetupActivity extends Activity {
 	// Initialize Bluetooth and report status
 	 private void getBluetoothState() {
 
-		 // Get Status From Service
-		 //		String btStatus = null;
-		 //		try {
-		 //			btStatus = mBluetoothService.Status(btStatus);
-		 //		} catch (RemoteException e) {
-		 //			// TODO Auto-generated catch block
-		 //			e.printStackTrace();
-		 //		} catch (NullPointerException e) {
-		 //			// TODO Auto-generated catch block
-		 //			e.printStackTrace();
-		 //		}
-		 //		Log.d(TAG, "Bluetooth Status:" + btStatus);
-		 //		bluetoothStatusSetup.setText(btStatus);
-
 		 if (bluetoothAdapter == null) {
 			 bluetoothStatusSetup.setText("Bluetooth NOT supported");
 		 } else if (!(bluetoothAdapter.isEnabled())) {
@@ -184,8 +163,6 @@ public class SetupActivity extends Activity {
 			 Intent enableBtIntent = new Intent(
 					 BluetoothAdapter.ACTION_REQUEST_ENABLE);
 			 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-			 
-			 // Go back to update
 			 getBluetoothState();
 		 }
 
@@ -217,11 +194,9 @@ public class SetupActivity extends Activity {
 		
 		refreshFoundDevicesListButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-				
+				bluetoothAdapter.cancelDiscovery();
 				btArrayAdapter.clear();
 				bluetoothAdapter.startDiscovery();
-				
-				getBluetoothState();
 
 			}
 
@@ -249,9 +224,11 @@ public class SetupActivity extends Activity {
 	// Attempts to connect to device by running BluetoothService OnStartCommand
 	public synchronized void servicestartRequest(String selectedDevice) {
 		Intent connectIntent = new Intent(this, BluetoothService.class);
-		connectIntent.putExtra("selectedDevice", selectedDevice);
-		connectIntent.putExtra("ACTION", "SERVICE_REQUEST_CONNECT");
+		connectIntent.putExtra("selectedDevice", selectedDevice); // Data
+		connectIntent.putExtra("ACTION", "SERVICE_REQUEST_CONNECT");  // Indicate Action
 		startService(connectIntent);
+		
+		Log.i(TAG, "Service start request with:" + selectedDevice);
 
 		// Return to Menu
 		Intent myIntent = new Intent(this, MenuActivity.class);
@@ -287,8 +264,6 @@ public class SetupActivity extends Activity {
 		super.onDestroy();
 		if (D)
 			Log.e(TAG, "--- ON DESTROY ---");
-
-		isBound = false;
 
 	}
 }

@@ -27,8 +27,6 @@ public class MenuActivity extends Activity {
 	TextView bluetoothStatusMenu;
 	View connectIndicator;
 
-	BluetoothAdapter bluetoothAdapter;
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -40,9 +38,6 @@ public class MenuActivity extends Activity {
 
 		// Set Click listeners
 		setClickListeners();
-
-		// Check Status
-//		updateBluetoothStatus();
 
 	}
 
@@ -119,10 +114,7 @@ public class MenuActivity extends Activity {
 		switch (item.getItemId()) {
 		case R.id.menu_exit:
 			
-			// Disable Bluetooth
-			if (!bluetoothAdapter.isEnabled()) {
-				bluetoothAdapter.disable();
-			}
+			// Need to add in something to turn off bluetooth adapter.
 
 			Intent iExit = new Intent(Intent.ACTION_MAIN);
 			iExit.addCategory(Intent.CATEGORY_HOME);

@@ -118,10 +118,17 @@ public class MenuActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_exit:
+			
+//			// Disable Bluetooth
+//			if (bluetoothAdapter.isEnabled()) {
+//				bluetoothAdapter.disable();
+//			}
+
 			Intent iExit = new Intent(Intent.ACTION_MAIN);
 			iExit.addCategory(Intent.CATEGORY_HOME);
 			iExit.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			startActivity(iExit);
+			
 			return true;
 		case R.id.menu_disconnect:
 			Intent iStopService = new Intent(this, BluetoothService.class);
