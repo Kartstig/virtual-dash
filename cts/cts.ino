@@ -1,12 +1,13 @@
 #include <Adafruit_NeoPixel.h>
-#define PIN 6
+#include <LiquidCrystal_I2C.h>
+#define LED_PIN 6
 #define NUMPIXELS 3
 
 #define PIN_TEMPERATURE_1 A0
 #define PIN_PRESSURE A1
-#define LED1 13
 #define VCC 5.0
 #define TEMP1_LOADR 169
+#define LCD_ADDR 0x27
 
 #define P1 0  // Oil Pressure
 #define CT1 1 // Oil Temperature
@@ -14,7 +15,11 @@
 
 const int loadR = 100;
 
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+// Init LED
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
+
+// Init LCD
+LiquidCrystal_I2C lcd(LCD_ADDR, 16, 2);
 
 typedef struct
 {
@@ -78,11 +83,13 @@ const valueColor PressureTable[PRESSURE_TABLE_LENGTH]{
 
 void setup()
 {
+  lcd.init();
+  lcd.backlight();
   pixels.begin();
   Serial.begin(115200);
   pinMode(PIN_PRESSURE, INPUT);
   pinMode(PIN_TEMPERATURE_1, INPUT);
-  pinMode(LED1, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
 }
 
 valueColor lookupTemperature(temperatureVector *c, float R)
@@ -115,7 +122,7 @@ valueColor lookupPressure(valueColor *pt, float P)
 {
   for (int i = 0; i < PRESSURE_TABLE_LENGTH - 1; i++)
   {
-    if (i == 0 && P <= pt[i].Value)
+    if (i == 0 && P < pt[i].Value)
       return {P, Red};
     if (i == PRESSURE_TABLE_LENGTH - 1 && P >= pt[i].Value)
       return {P, Blue};
@@ -161,10 +168,16 @@ valueColor getTemperature()
 void loop()
 {
   const valueColor ct2 = getTemperature();
+  lcd.setCursor(0, 0);
+  lcd.write("Temperature: ");
+  lcd.write(ct2.Value);
   Serial.print("Temperature: ");
   Serial.println(ct2.Value);
 
   const valueColor P = getPressure();
+  lcd.setCursor(1, 0);
+  lcd.write("Pressure: ");
+  lcd.write(P.Value);
   Serial.print("Pressure: ");
   Serial.println(P.Value);
 
