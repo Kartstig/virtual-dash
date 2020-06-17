@@ -54,27 +54,30 @@ const color Yellow = {128, 128, 0};
 const color Blue = {0, 0, 32};
 const color Green = {0, 24, 0};
 
-#define TEMPLENGTH 15
+#define TEMPLENGTH 18
 const temperatureVector TemperatureTable[TEMPLENGTH] = {
     {70, 600.0, Blue},
     {85, 450.0, Blue},
     {129, 179.7, Blue},
     {135, 174, Blue},
-    {141, 150, Green},
-    {144, 127.5, Green},
-    {155, 98.7, Green},
-    {158, 84.3, Green},
+    {141, 150, Blue},
+    {144, 127.5, Blue},
+    {155, 98.7, Blue},
+    {158, 84.3, Blue},
     {160, 69.2, Green},
     {165, 66, Green},
     {170, 64.7, Green},
     {180, 63.5, Green},
-    {185, 63, Yellow},
-    {190, 62.8, Yellow},
-    {212, 56, Red}};
+    {185, 63, Green},
+    {190, 62.8, Green},
+    {200, 64.0, Green},
+    {212, 56, Yellow},
+    {230, 52, Red},
+    {240, 50.5, Red}};
 
 #define PRESSURE_TABLE_LENGTH 6
 const valueColor PressureTable[PRESSURE_TABLE_LENGTH]{
-    {0, Red},
+    {-5, Red},
     {5, Red},
     {18, Red},
     {20, Yellow},
