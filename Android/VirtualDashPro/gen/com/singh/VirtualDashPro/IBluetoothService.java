@@ -1,6 +1,6 @@
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Original file: C:\\Users\\Herman\\Documents\\GitHub\\VIrtual_Dash_Pro\\Android\\VirtualDashPro\\src\\com\\singh\\VirtualDashPro\\IBluetoothService.aidl
+ * Original file: /home/herman/Dev/virtual-dash-pro/Android/VirtualDashPro/src/com/singh/VirtualDashPro/IBluetoothService.aidl
  */
 package com.singh.VirtualDashPro;
 public interface IBluetoothService extends android.os.IInterface
@@ -23,13 +23,13 @@ public static com.singh.VirtualDashPro.IBluetoothService asInterface(android.os.
 if ((obj==null)) {
 return null;
 }
-android.os.IInterface iin = (android.os.IInterface)obj.queryLocalInterface(DESCRIPTOR);
+android.os.IInterface iin = obj.queryLocalInterface(DESCRIPTOR);
 if (((iin!=null)&&(iin instanceof com.singh.VirtualDashPro.IBluetoothService))) {
 return ((com.singh.VirtualDashPro.IBluetoothService)iin);
 }
 return new com.singh.VirtualDashPro.IBluetoothService.Stub.Proxy(obj);
 }
-public android.os.IBinder asBinder()
+@Override public android.os.IBinder asBinder()
 {
 return this;
 }
@@ -72,7 +72,7 @@ Proxy(android.os.IBinder remote)
 {
 mRemote = remote;
 }
-public android.os.IBinder asBinder()
+@Override public android.os.IBinder asBinder()
 {
 return mRemote;
 }
@@ -82,7 +82,7 @@ return DESCRIPTOR;
 }
 // Get Process ID of service
 
-public int getPid(int pid) throws android.os.RemoteException
+@Override public int getPid(int pid) throws android.os.RemoteException
 {
 android.os.Parcel _data = android.os.Parcel.obtain();
 android.os.Parcel _reply = android.os.Parcel.obtain();
@@ -102,7 +102,7 @@ return _result;
 }
 // Get Bluetooth Status
 
-public java.lang.String Status(java.lang.String status) throws android.os.RemoteException
+@Override public java.lang.String Status(java.lang.String status) throws android.os.RemoteException
 {
 android.os.Parcel _data = android.os.Parcel.obtain();
 android.os.Parcel _reply = android.os.Parcel.obtain();
